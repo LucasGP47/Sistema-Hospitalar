@@ -1,0 +1,63 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: securepassword
+      MYSQL_DATABASE: hospital_db
+    volumes:
+      - ./db/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - medical_network
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: securepassword
+    volumes:
+      - ./db/mongo/init.js:/docker-entrypoint-initdb.d/init.js
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - medical_network
+
+  python_api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+      - mongodb
+      - rabbitmq
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/app
+    networks:
+      - medical_network
+    environment:
+      DB_HOST: mysql
+      MONGO_HOST: mongodb
+      RABBITMQ_HOST: rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - medical_network
+
+volumes:
+  mysql_data:
+  mongo_data:
+  rabbitmq_data:
+
+networks:
+  medical_network:
