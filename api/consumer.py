@@ -3,7 +3,7 @@ import json
 
 def callback(ch, method, properties, body):
     message = json.loads(body)
-    print(f"🚨 Notificação recebida: {message}")
+    print(f"Notificação recebida: {message}")
 
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host='localhost')
