@@ -5,7 +5,7 @@ import os
 
 container_name = "sistema-hospitalar_mysql_1"
 mysql_user = "root"
-mysql_password = "root"
+mysql_password = "securepassword"
 database_name = "hospital_db"
 dump_filename = f"backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.sql"
 
