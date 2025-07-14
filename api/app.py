@@ -6,8 +6,30 @@ import json
 import os
 import datetime
 import time
+import oci
 
 app = Flask(__name__)
+
+VAULT_TOKEN_OCID = "ocid1.vaultsecret.oc1.sa-saopaulo-1.amaaaaaaskvkz5qadezpfegvjjks727ryr6semyn224n7rmgun7gmgoyl7nq"
+
+def get_token_from_vault(secret_ocid):
+    config = oci.config.from_file()  # Pega configuração padrão ~/.oci/config
+    secrets_client = oci.secrets.SecretsClient(config)
+    response = secrets_client.get_secret_bundle(secret_ocid)
+    encoded_content = response.data.secret_bundle_content.content
+    token = encoded_content.decode('utf-8').strip()
+    return token
+
+API_TOKEN = get_token_from_vault(VAULT_TOKEN_OCID)
+
+@app.before_request
+def verificar_token():
+    if request.endpoint == 'health':  # deixa rota /health livre para checagem simples
+        return None
+    
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or auth_header != f"Bearer {API_TOKEN}":
+        return jsonify({"erro": "Não autorizado"}), 401
 
 def wait_for_services():
     print("Aguardando conexão com os serviços")
