@@ -36,7 +36,7 @@ bucket_name = "hospital-storage"
 namespace = "grbnhngdfn79"
 
 try:
-    config = oci.config.from_file()
+    config = oci.config.from_file(file_location='/home/ubuntu/.oci/config')
     object_storage = oci.object_storage.ObjectStorageClient(config)
 
     with open(backup_filename, "rb") as f:
