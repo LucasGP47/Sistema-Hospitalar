@@ -73,6 +73,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      python_api:
+        condition: service_started
     volumes:
       - ./api:/app
       - /home/ubuntu/.oci_container:/root/.oci:ro
@@ -80,6 +82,7 @@ services:
       - medical_network
     environment:
       RABBITMQ_HOST: rabbitmq
+      API_HOST: python_api
     restart: unless-stopped
 
 volumes:
