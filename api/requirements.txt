@@ -2,4 +2,4 @@ Flask==2.3.3
 mysql-connector-python==8.1.0
 pymongo==4.5.0
 pika==1.3.2
-oci
+oci==2.91.0
