@@ -32,7 +32,7 @@ def token_test():
 
 @app.before_request
 def verificar_token():
-    if request.endpoint == 'health':  # deixa rota /health livre para checagem simples
+    if request.endpoint in ['health', 'token_test']:
         return None
     
     auth_header = request.headers.get('Authorization')
