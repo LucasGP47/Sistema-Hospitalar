@@ -25,7 +25,7 @@ dump_command = [
 try:
     subprocess.run(dump_command, check=True)
     subprocess.run(["docker", "cp", f"{mongo_container}:/data/{backup_filename}", backup_filename], check=True)
-    print(f"✔ Backup MongoDB salvo como {backup_filename}")
+    print(f"Backup MongoDB salvo como {backup_filename}")
 except subprocess.CalledProcessError:
     print("Erro ao gerar ou copiar o backup do MongoDB.")
     exit(1)
