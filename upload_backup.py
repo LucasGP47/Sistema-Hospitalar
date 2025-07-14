@@ -48,10 +48,16 @@ try:
         )
 
     print(f"Backup enviado com sucesso como '{backup_filename}' no bucket '{bucket_name}'")
+    
 except Exception as e:
     print(f"Erro ao enviar para OCI: {e}")
-    exit(1)
+    
+finally:
+    print("[3/3] Limpando backup local...")
+    if os.path.exists(backup_filename):
+        os.remove(backup_filename)
+        print("Arquivo de backup removido com sucesso")
+    else:
+        print("Arquivo de backup não encontrado para remoção.")
 
-print("[3/3] Limpando backup local...")
-os.remove(backup_filename)
 print("Concluído!")
