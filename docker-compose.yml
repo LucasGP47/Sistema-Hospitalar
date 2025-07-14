@@ -58,17 +58,16 @@ services:
   rabbitmq_consumer:
     build:
       context: ./api
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.consumer
     depends_on:
       - rabbitmq
     volumes:
       - ./api:/app
       - /home/ubuntu/.oci_container:/root/.oci:ro
-    command: ["python", "consumer_notifications.py"]
     networks:
       - medical_network
     environment:
-      RABBITMQ_HOST: rabbitmq
+    RABBITMQ_HOST: rabbitmq
   
 volumes:
   mysql_data:
