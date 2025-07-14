@@ -225,15 +225,24 @@ def generate_html_email(message, patient_data):
     except Exception as e:
         print(f"Erro ao gerar HTML: {e}", flush=True)
         return f"<html><body><h1>Erro ao gerar email</h1><p>{str(e)}</p><p>Dados: {json.dumps(message)}</p></body></html>"
+
+def send_oci_email(message):
     try:
         print("Enviando notificação OCI...", flush=True)
-        config = oci.config.from_file()
         
+        patient_id = message.get('patient_id')
+        patient_data = None
+        if patient_id:
+            patient_data = get_patient_data(patient_id)
+        
+        html_content = generate_html_email(message, patient_data)
+        
+        config = oci.config.from_file()
         client = oci.ons.NotificationDataPlaneClient(config)
         
         message_details = oci.ons.models.MessageDetails(
-            body=json.dumps(message),
-            title=f"[{message.get('type')}] Notificação Hospital"
+            body=html_content,
+            title=f"[{message.get('type', 'ALERTA')}] Notificação Hospital - Paciente ID: {patient_id}"
         )
         
         response = client.publish_message(
@@ -246,6 +255,7 @@ def generate_html_email(message, patient_data):
     except Exception as e:
         print(f"Erro ao enviar notificação OCI: {e}", flush=True)
         print(f"Tipo do erro: {type(e)}", flush=True)
+        print(f"Dados da mensagem: {json.dumps(message, indent=2)}", flush=True)
 
 def callback(ch, method, properties, body):
     print(f"Mensagem recebida do RabbitMQ: {body}", flush=True)
@@ -258,12 +268,11 @@ def callback(ch, method, properties, body):
         print(f"Erro ao processar mensagem: {e}", flush=True)
 
 def main():
-    print("=== CONSUMER INICIADO ===", flush=True)
+    print("CONSUMER INICIADO", flush=True)
     print(f"Python version: {sys.version}", flush=True)
     print(f"Working directory: {os.getcwd()}", flush=True)
     print(f"RABBITMQ_HOST: {os.environ.get('RABBITMQ_HOST', 'rabbitmq')}", flush=True)
     
-    # Aguardar RabbitMQ
     if not wait_for_rabbitmq():
         print("Saindo devido a falha na conexão com RabbitMQ", flush=True)
         sys.exit(1)
