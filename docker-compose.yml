@@ -11,6 +11,10 @@ services:
       - "3307:3306"
     networks:
       - medical_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   mongodb:
     image: mongo:latest
@@ -25,14 +29,31 @@ services:
     networks:
       - medical_network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - medical_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      timeout: 30s
+      retries: 10
+
   python_api:
     build:
       context: ./api
       dockerfile: Dockerfile
     depends_on:
-      - mysql
-      - mongodb
-      - rabbitmq
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "5000:5000"
     volumes:
@@ -45,22 +66,13 @@ services:
       MONGO_HOST: mongodb
       RABBITMQ_HOST: rabbitmq
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - medical_network
-
   rabbitmq_consumer:
     build:
       context: ./api
       dockerfile: Dockerfile.consumer
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./api:/app
       - /home/ubuntu/.oci_container:/root/.oci:ro
@@ -68,7 +80,8 @@ services:
       - medical_network
     environment:
       RABBITMQ_HOST: rabbitmq
-  
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   mongo_data:
