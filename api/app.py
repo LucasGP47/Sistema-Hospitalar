@@ -17,8 +17,12 @@ def get_token_from_vault(secret_ocid):
     secrets_client = oci.secrets.SecretsClient(config)
     response = secrets_client.get_secret_bundle(secret_ocid)
     encoded_content = response.data.secret_bundle_content.content
-    token = encoded_content.decode('utf-8').strip()
-    return token
+
+    if isinstance(encoded_content, bytes):
+        token = encoded_content.decode('utf-8').strip()
+    else:
+        token = encoded_content.strip()
+        return token
 
 API_TOKEN = get_token_from_vault(VAULT_TOKEN_OCID)
 
