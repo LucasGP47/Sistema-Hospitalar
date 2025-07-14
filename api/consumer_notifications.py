@@ -38,17 +38,24 @@ def send_oci_email(message):
     try:
         print("Enviando notificação OCI...", flush=True)
         config = oci.config.from_file()
-        client = oci.ons.NotificationControlPlaneClient(config)
-        client.publish_message(
-            TOPIC_OCID,
-            oci.ons.models.PublishMessageDetails(
-                message=json.dumps(message),
-                default=f"[{message.get('type')}] Notificação recebida"
-            )
+        
+        client = oci.ons.NotificationDataPlaneClient(config)
+        
+        message_details = oci.ons.models.MessageDetails(
+            body=json.dumps(message),
+            title=f"[{message.get('type')}] Notificação Hospital"
         )
-        print("Notificação enviada via OCI", flush=True)
+        
+        response = client.publish_message(
+            topic_id=TOPIC_OCID,
+            message_details=message_details
+        )
+        
+        print(f"Notificação enviada via OCI. Message ID: {response.data.message_id}", flush=True)
+        
     except Exception as e:
         print(f"Erro ao enviar notificação OCI: {e}", flush=True)
+        print(f"Tipo do erro: {type(e)}", flush=True)
 
 def callback(ch, method, properties, body):
     print(f"Mensagem recebida do RabbitMQ: {body}", flush=True)
@@ -81,7 +88,7 @@ def main():
                 )
             )
             channel = connection.channel()
-            
+
             channel.queue_declare(queue='notifications', durable=True)
             print("Queue 'notifications' declarada", flush=True)
             
