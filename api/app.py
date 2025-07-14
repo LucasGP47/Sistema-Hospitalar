@@ -26,6 +26,10 @@ def get_token_from_vault(secret_ocid):
 
 API_TOKEN = get_token_from_vault(VAULT_TOKEN_OCID)
 
+@app.route('/token_test')
+def token_test():
+    return jsonify({"token": API_TOKEN})
+
 @app.before_request
 def verificar_token():
     if request.endpoint == 'health':  # deixa rota /health livre para checagem simples
