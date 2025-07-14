@@ -1,3 +1,5 @@
+print("Consumer iniciado")
+
 import json
 import pika
 import oci

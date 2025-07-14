@@ -67,6 +67,8 @@ services:
     command: ["python", "consumer_notifications.py"]
     networks:
       - medical_network
+    environment:
+      RABBITMQ_HOST: rabbitmq
   
 volumes:
   mysql_data:
