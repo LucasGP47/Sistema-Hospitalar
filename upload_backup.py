@@ -3,25 +3,31 @@ import oci
 import datetime
 import os
 
-container_name = "sistema-hospitalar_mysql_1"
-mysql_user = "root"
-mysql_password = "securepassword"
-database_name = "hospital_db"
-dump_filename = f"backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.sql"
+mongo_container = "sistema-hospitalar_mongodb_1"
+database_name = "hospital"
+collection_name = "monitoring"
+timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+backup_filename = f"mongodb_backup_{timestamp}.json"
 
-print("[1/3] Gerando dump do banco MySQL...")
+print("[1/3] Exportando dados do MongoDB...")
 
 dump_command = [
-    "docker", "exec", container_name,
-    "mysqldump", f"-u{mysql_user}", f"-p{mysql_password}", database_name
+    "docker", "exec", mongo_container,
+    "mongoexport",
+    "--db", database_name,
+    "--collection", collection_name,
+    "--username", "admin",
+    "--password", "securepassword",
+    "--authenticationDatabase", "admin",
+    "--out", f"/data/{backup_filename}"
 ]
 
 try:
-    with open(dump_filename, "w") as f:
-        subprocess.run(dump_command, stdout=f, check=True)
-    print(f"Dump gerado: {dump_filename}")
+    subprocess.run(dump_command, check=True)
+    subprocess.run(["docker", "cp", f"{mongo_container}:/data/{backup_filename}", backup_filename], check=True)
+    print(f"✔ Backup MongoDB salvo como {backup_filename}")
 except subprocess.CalledProcessError:
-    print("Erro ao gerar o dump. Verifique credenciais e container.")
+    print("Erro ao gerar ou copiar o backup do MongoDB.")
     exit(1)
 
 print("[2/3] Enviando para OCI Object Storage...")
@@ -33,19 +39,19 @@ try:
     config = oci.config.from_file()
     object_storage = oci.object_storage.ObjectStorageClient(config)
 
-    with open(dump_filename, "rb") as f:
+    with open(backup_filename, "rb") as f:
         object_storage.put_object(
             namespace_name=namespace,
             bucket_name=bucket_name,
-            object_name=dump_filename,
+            object_name=backup_filename,
             put_object_body=f
         )
 
-    print(f"Backup enviado com sucesso como '{dump_filename}' no bucket '{bucket_name}'")
+    print(f"Backup enviado com sucesso como '{backup_filename}' no bucket '{bucket_name}'")
 except Exception as e:
     print(f"Erro ao enviar para OCI: {e}")
     exit(1)
 
 print("[3/3] Limpando backup local...")
-os.remove(dump_filename)
+os.remove(backup_filename)
 print("Concluído!")
