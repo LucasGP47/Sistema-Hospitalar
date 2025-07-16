@@ -111,113 +111,22 @@ def generate_html_email(message, patient_data):
             formatted_time = timestamp
         
         html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Alerta Crítico - Sistema Hospitalar</title>
-            <style>
-                body {{
-                    font-family: Arial, sans-serif;
-                    margin: 0;
-                    padding: 20px;
-                    background-color: #f5f5f5;
-                }}
-                .container {{
-                    max-width: 600px;
-                    margin: 0 auto;
-                    background-color: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                }}
-                .header {{
-                    background-color: #dc3545;
-                    color: white;
-                    padding: 20px;
-                    text-align: center;
-                }}
-                .content {{
-                    padding: 30px;
-                }}
-                .alert-box {{
-                    background-color: #fff3cd;
-                    border: 1px solid #ffeaa7;
-                    border-radius: 5px;
-                    padding: 15px;
-                    margin: 20px 0;
-                }}
-                .patient-info {{
-                    background-color: #f8f9fa;
-                    border-radius: 5px;
-                    padding: 15px;
-                    margin: 20px 0;
-                }}
-                .vital-signs {{
-                    background-color: #ffe6e6;
-                    border-left: 4px solid #dc3545;
-                    padding: 15px;
-                    margin: 20px 0;
-                }}
-                .footer {{
-                    background-color: #6c757d;
-                    color: white;
-                    padding: 15px;
-                    text-align: center;
-                    font-size: 12px;
-                }}
-                .critical {{
-                    color: #dc3545;
-                    font-weight: bold;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>ALERTA CRÍTICO</h1>
-                    <p>Sistema de Monitoramento Hospitalar</p>
-                </div>
-                
-                <div class="content">
-                    <div class="alert-box">
-                        <h2>ALERTA AO DR. {doctor_name}</h2>
-                        <p><strong>Especialidade:</strong> {doctor_specialty}</p>
-                    </div>
-                    
-                    <div class="patient-info">
-                        <h3>URGENTE: PACIENTE <span class="critical">{patient_name}</span> ESTÁ EM ESTADO CRÍTICO</h3>
-                        <p><strong>ID do Paciente:</strong> {patient_id}</p>
-                        <p><strong>Hora do Log:</strong> {formatted_time}</p>
-                    </div>
-                    
-                    <div class="vital-signs">
-                        <h3>Sinais Vitais Críticos</h3>
-                        <p><strong>Frequência Cardíaca:</strong> <span class="critical">{heart_rate} BPM</span></p>
-                        <p><strong>Pressão Arterial:</strong> <span class="critical">{blood_pressure}</span></p>
-                    </div>
-                    
-                    <div class="alert-box">
-                        <h3>Log Completo do Sistema</h3>
-                        <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto;">
-{json.dumps(message, indent=2, ensure_ascii=False)}
-                        </pre>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 30px;">
-                        <p><strong> AÇÃO IMEDIATA REQUERIDA</strong></p>
-                        <p>Este é um alerta automático do sistema de monitoramento.</p>
-                        <p>Favor verificar o paciente imediatamente.</p>
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    <p>Sistema Hospitalar - Monitoramento Automático</p>
-                    <p>Gerado em: {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}</p>
-                </div>
-            </div>
-        </body>
-        </html>
+            ALERTA AO DR. {doctor_name}
+            Especialidade:</strong> {doctor_specialty}
+            URGENTE: PACIENTE {patient_name}ESTÁ EM ESTADO CRÍTICO
+            ID do Paciente:</strong> {patient_id}
+            Hora do Log: {formatted_time}
+            Sinais Vitais Críticos
+            Frequência Cardíaca: {heart_rate} BPM
+            Pressão Arterial: {blood_pressure}
+            Log Completo do Sistema: {json.dumps(message, indent=2, ensure_ascii=False)}
+
+            AÇÃO IMEDIATA REQUERIDA
+            Este é um alerta automático do sistema de monitoramento
+            Favor verificar o paciente imediatamente.
+
+            Sistema Hospitalar - Monitoramento Automático
+            Gerado em: {datetime.now().strftime('%d/%m/%Y às %H:%M:%S')}
         """
         
         return html_content
